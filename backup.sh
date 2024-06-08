@@ -18,7 +18,7 @@ LOG_FILE=/home/minecraft/backups/backup.log # Path to log file
 SFOLDER=/home/minecraft/server # Folder where is found minecraft server
 BFOLDER=/home/minecraft/backups # Folder for backups
 COMPOSE=/home/minecraft/velocity+dionysus-docker-compose.yml # Path to compose files
-HASH=sha256 # sha256/md5
+HASH=sha256 # sha256/sha512/md5
 TYPE=gzip # gzip/7z/bzip2. Recommend gzip
 
 # Here the choice is based on the variable $TYPE
@@ -54,16 +54,18 @@ backup
 
 function hash () {
 if [ "$HASH" == "md5" ]; then
-    md5sum "$BFOLDER/backup_$DATE.$FORMAT" > "$BFOLDER/backup_$DATE.md5"
+    md5sum "$BFOLDER/backup_$DATE.$FORMAT" > "$BFOLDER/backup_$DATE.$FORMAT.md5"
 elif [ "$HASH" == "sha256" ]; then
-    sha256sum "$BFOLDER/backup_$DATE.$FORMAT" > "$BFOLDER/backup_$DATE.sha256"
+    sha256sum "$BFOLDER/backup_$DATE.$FORMAT" > "$BFOLDER/backup_$DATE.$FORMAT.sha256"
+elif [ "$HASH" == "sha512" ]; then
+    sha512sum "$BFOLDER/backup_$DATE.$FORMAT" > "$BFOLDER/backup_$DATE.$FORMAT.sha256"
 fi
 }
 
 hash
 
 # CleanUp old backup files
-#find "$BFOLDER" -type f -mtime +"$DAY" -delete >> "$LOG_FILE" 2>&1
+find "$BFOLDER" -type f -mtime +"$DAY" -delete >> "$LOG_FILE" 2>&1
 
 # Start all containers via compose file
 podman-compose -f $COMPOSE up -d >> "$LOG_FILE" 2>&1
